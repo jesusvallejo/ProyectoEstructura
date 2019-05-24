@@ -1,0 +1,126 @@
+#iconos {
+/* border: solid thin black; */
+padding: 0%
+}
+#Asignatura {
+	margin-right:10%;
+	margin-left: 10%; 
+	/*border: solid medium green;
+	padding: 0%;
+	*/
+}
+#datosAsignatura {
+	margin-left: 40%;
+	padding: 0.5%;
+	/*border: solid medium blue;*/
+}
+td.datosUno {color: #595959; font-size: 11pt; font-family: Arial,serif;}
+td.datosDos{color: #595959; font-size: 11pt; font-family: Arial,serif; text-align: justify;}
+
+BODY {
+    /* padding:0 0 1em 0;*/
+	padding: 1%;
+	margin:0;
+	/*font-family: Verdana, serif;*/
+	font-family: Helvetica, Arial, serif;
+    /* border: 5px solid red; */
+   /*	background-color: #eaeaea; */
+   	background-color: #f0f0f0;
+	color: black; 
+}
+#MiPagina {
+	/* margin:0;*/
+	position: relative;
+	margin: auto;
+	border:0;
+	padding:0;
+	margin-right: 5%;
+	min-width: 852px;
+	height: inherit;
+	/* border: dotted medium yellow; */
+}
+
+div.contenido{
+	/* margen relativo al padre, que es MiPagina */
+	position: absolute; 
+    /* top: 100%;
+	height:100%;
+	*/
+	height: auto;
+	margin-top: 2%;
+	margin-right: 30%;
+	padding-left: 5%;
+	padding-right: 5%;
+	text-align: justify;
+	max-width: 65%;
+/* border: double medium blue; */
+}
+
+div.topmenu {
+	background-color: #e3dde0;
+        overflow: auto;
+        white-space: nowrap;
+	margin-left: 0%;
+	/* border: dashed medium black; */
+}
+div.topmenu a {
+    display: inline-block;
+    color: blue;
+    text-align: center;
+    /* padding: 10px; */
+	padding: 1%;
+    text-decoration: none;
+	font-size: 11pt;
+}
+div.topmenu a:hover {
+    background-color: white;
+}
+div.noticias {
+	list-style-type: none;
+	list-style-image: none;
+	position: absolute; 
+	height: 100%;
+	margin-top: 2%;
+	margin-left: 70%;
+	color: black;
+	max-width: 45%;
+	text-align: justify;
+	font-size: 11pt;
+	/* border: solid medium black; */
+}
+div.noticias ul {
+	list-style-type: none;
+	list-style-image: none;
+}
+div.noticias li.par {
+    margin: 0%;
+    padding: 0.5em;
+	/*padding-left: 0em;
+	padding-top: 0.5em;
+	*/
+	margin-bottom:0em;
+	background: #e3dde0;
+	border: inset medium #f3f3f3;
+	}
+div.noticias li.impar {
+   	margin: 0%;
+    	padding: 0.5em;
+	margin-bottom:0em;
+	border: inset medium #f3f3f3;
+	background: #fff3e2;
+	}
+p.profes {
+	font-family: Arial, Helvetica, sans-serif;
+   	font-size: 11pt;
+}
+h4.tema{
+	margin-bottom: -0.5em;
+}
+li.bibliografia{
+   	margin-bottom:0.5em;
+}
+li {
+	margin-bottom:0.2em;
+}
+tr.exam{background: #d8d8d8;}
+

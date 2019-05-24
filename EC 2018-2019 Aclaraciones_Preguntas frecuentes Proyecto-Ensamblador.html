@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- saved from url=(0088)http://www.datsi.fi.upm.es/docencia/Estructura_09/Proyecto_Ensamblador/aclaraciones.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+   <title>EC 2018-2019 Aclaraciones/Preguntas frecuentes Proyecto-Ensamblador</title>
+   
+   <link rel="stylesheet" href="./EC 2018-2019 Aclaraciones_Preguntas frecuentes Proyecto-Ensamblador_files/estilo.css">
+</head>
+
+<body>
+<div id="iconos">
+<a href="http://www.upm.es/"><img src="./EC 2018-2019 Aclaraciones_Preguntas frecuentes Proyecto-Ensamblador_files/logo_upm.png" alt="" height="70"></a>
+<a href="http://www.fi.upm.es/"><img src="./EC 2018-2019 Aclaraciones_Preguntas frecuentes Proyecto-Ensamblador_files/logo_fi.png" alt="" height="70"></a>
+<a href="http://www.datsi.fi.upm.es/"><img src="./EC 2018-2019 Aclaraciones_Preguntas frecuentes Proyecto-Ensamblador_files/datsi_small.gif" alt="" height="50"></a>
+</div>
+
+
+<div id="Asignatura">
+<h2 align="center">Estructura de Computadores<br>
+Grado en Ingeniería Informática<br>
+Curso 2018/2019
+</h2>
+
+<h1 align="center">Proyecto de programación en ensamblador</h1>
+<h2 align="center">Aclaraciones/Preguntas frecuentes sobre el enunciado</h2>
+</div>
+
+<hr>
+
+<h3>Se irán incluyendo en este apartado aclaraciones o respuestas
+proporcionadas a preguntas de alumnos que se considere puedan ser de
+interés general.</h3>
+
+<hr>
+
+<h3>ALTA de grupos: "El alumno XXXXXX no está en la lista de la asignatura"</h3>
+
+<ul>
+<li>Pueden ser varios los motivos por los que se produzca este error
+ al realizar el alta de un grupo. Algunas causas obvias son no estar
+ matriculado en el momento en que intenta realizar el alta o no haber
+ generado correctamente el fichero "autores" descrito en el
+ enunciado.<br>
+ Otra posibilidad es que el alumno conserve una calificación en el
+ proyecto obtenida en el curso anterior (recuerde que se conservan
+ calificaciones de proyecto por encima de los 2 puntos sobre 10).<br>
+ El alumno que se encuentra en esta situación <i>puede renunciar</i>
+ a la calificación que conserva desde el curso pasado. A partir de
+ entonces podrá registrarse de nuevo como alumno del proyecto,
+ obteniendo la nota de proyecto que alcance con los criterios de
+ calificación actuales.<br>
+ Para renuciar a la nota anterior bastará con enviar un mensaje a
+ pr_ensamblador@datsi.fi.upm.es desde la cuenta de correo oficial
+ (xxx@alumnos.upm.es) y esperar la confirmación del departamento. A
+ partir de ese momento, su calificación anterior será eliminada,
+ primero de forma provisional y, tan pronto como realice una entrega
+ y se pase el corrector a la misma, de forma definitiva. 
+</li></ul>
+
+<h3>ERROR: alineamiento a palabra erroneo</h3>
+
+<ul>
+<li>Este tipo de error se produce porque se intenta leer o escribir
+  una palabra en una dirección de memoria que <b>no</b> está alineada a
+  palabra, es decir, que no es múltiplo de 4. Una palabra solo se
+  puede leer o escribir sin error de las direcciones que sean
+  múltiplos de 4:  0, 4, 8, 12, 16, .... Del mismo modo, media palabra
+  solo se puede leer o escribir sin error de las direcciones pares: 0,
+  2, 4, 6, 8, 10, ... Sin embargo, un byte sí se puede leer o escribir
+  en cualquier dirección de memoria. 
+</li></ul>
+
+<h3>Gestión de errores y/o casos límite</h3>
+
+<ul>
+<li>No es necesario realizar más tratamiento de errores en el
+  desarrollo del proyecto que el indicado en el enunciado de algunas
+  de las subrutinas.
+<ul>
+<li>Ejemplo de error/caso particular al que se debe dar tratamiento:
+  en <tt><b>ActualizaFiltro</b></tt> se indica que en el caso de que
+  el Numerador o el Denominador definidos por el
+  parámetro <i>dupla</i> sean cero, entonces no se realizará el
+  producto ni la división.
+</li><li>Ejemplo de error que no se debe tratar: en ningún apartado del
+  enunciado se hace referencia a que sea necesario comprobar si las 
+  dimensiones de una imagen que se pasa como parámetro a alguna de las
+  subrutinas sean válidas, es decir, que sean positivas y mayores o
+  iguales a 3. No se contempla utilizar en ningún caso imágenes con
+  dimensiones no válidas, por lo que no es necesario (ni se
+  considerará favorable de cara a la calificación del proyecto)
+  incorporar código para evitar el tratamiento de estos casos
+  erróneos.
+</li></ul>
+</li></ul>
+
+<hr>
+<address>
+
+<i>Página actualizada el 25 de octubre de 2018</i>
+</address>
+<center>
+<a href="http://www.datsi.fi.upm.es/docencia/Estructura_09/Proyecto_Ensamblador/aclaraciones.html#"><button><b>Ir al Principio</b></button></a>
+</center>
+
+
+
+</body></html>
