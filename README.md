@@ -1,4 +1,4 @@
-# ProyectoEstructura-
+# ProyectoEstructura
 Proyecto de Programación en Ensamblador Estructura de Computadores Grado en Ingeniería Informática Departamento de Arquitectura y Tecnología de Sistemas Informáticos 2018-2019 (primer semestre)
 
 La solución se encuentra en filtror.ens , la asignatura tiene un sistema de corrección complejo que detecta copias de codigo previamente
