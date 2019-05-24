@@ -1,0 +1,984 @@
+
+
+
+;Macros
+; es sin puntero a r30 y con a r31
+push: MACRO(ra)
+		subu r30,r30,4;
+		st ra,r30,0;		
+ENDMACRO
+
+pop: MACRO(ra)
+		ld ra,r30,0;
+		addu r30,r30,4	;	
+ENDMACRO
+
+
+LEA: MACRO (ra, eti)
+or ra, r0, low(eti)
+or.u ra, ra, high(eti)
+ENDMACRO
+
+swap: MACRO(ra,rb)
+		or r1, ra,ra;
+		or ra,rb,rb;
+		or rb,r1,r1;
+ENDMACRO
+
+;fin macros
+
+
+; r0-GND, r1-return_to_routine,  r2-cmp_sol, r3-counter  , 
+; r10....r28-programer_use,  r29-Solution, r30-stack_pointer 
+; r31-stack-frame 
+
+;load value , cmp(value>=0) then init nF= oper
+;cmp(oper<0) then if(nF>0) nF--;
+; r29 = nF
+
+;pruebanFil:
+;or r30,r0,r0
+;addu r30,r30,36860
+org 4
+
+nFiltrados: 
+			
+			;push(r1);/////////////////////////////////
+			;push(r31);////////// Creation of stack frame for the sub.
+			;or r31,r30,r30;///////////////////////
+			
+			ld r10,r30,0;Cargo oper en r10
+
+			cmp r2,r10,r0;
+			bb1 ge,r2,endnF;Comparo si es mayor o igual a 0 y salto
+			
+			ld r11,r0,r0;cargo en r11 el valor en la posicion 0 de memorioa con desplazamiento 0 (es decir nF)
+			
+			sub r11,r11,1;resto una posicion a nf
+			st r11,r0,r0; lo guardo
+			cmp r2,r11,r0; Miro si es menor que 0
+			bb0 lt,r2,endnFil;
+			or r11,r0,r0; es menor , ajusto a 0
+			st r11,r0,r0; guardo en memoria nF en la posicion 0
+			br endnFil;
+endnF:		
+			st r10,r0,r0;guardo oper como nf
+			or r29,r10,r0;
+			;or r30,r31,r31;/////////////////////////
+			;pop(r31);//////////////////////////////
+			;pop(r1);////////// Destruction of stack frame for the sub.
+			jmp(r1);///////////////////////////////		
+			
+endnFil:					
+			or r29, r11, r0;
+	        ;or r30,r31,r31;/////////////////////////
+			;pop(r31);//////////////////////////////
+			;pop(r1);////////// Destruction of stack frame for the sub.
+			jmp(r1);///////////////////////////////			
+
+;pruebaComp:		
+;or r30,r0,r0
+;addu r30,r30,36856
+			
+Comp:;teniendo en cuenta que img a y b son del mismo tamaño////// hay que cambiar r30 por 31
+
+					;push(r1);/////////////////////////
+					;push(r31);////////// Creation of stack frame for the sub.
+					;or r31,r30,r30;///////////////////////
+					
+					or r3, r0 ,r0; inicializo cursor 
+					or r5,r0,r0; ------------ acumulador de diferencias DIF--------------- init a 0
+					ld r10,r30,0;cargamos direccion de memoria img1
+					ld r11,r30,4;cargamos direccion de memoria img2
+					ld r12,r10,r3;cargamos tamaño m	
+					addu r3,r3,4;aumento pos r3=4
+					ld r13,r10,r3;cargamos tamaño n	
+					addu r3,r3,4;aumento pos r3=8
+					muls r20,r12,r13; tamImg1 
+                    ;tamMAx1
+					or r21,r0,r0
+				
+				bucleComp: 
+					cmp r2,r21,r20;
+					bb1 ge,r2,endComp;
+					ld.bu r14,r10,r3;
+					ld.bu r15,r11,r3;
+					subu r16,r14,r15;
+					mulu r16,r16,r16;
+					addu r5,r5,r16;
+					addu r3,r3,1;aumento pos r3 
+					addu r21,r21,1;
+					br bucleComp;
+					
+					
+				endComp:
+					divu r16,r5,r20;
+					or r29,r16,r0;
+					
+					;or r30,r31,r31;/////////////////////////
+					;pop(r31);//////////////////////////////
+					;pop(r1);////////// Destruction of stack frame for the sub.
+					jmp(r1);///////////////////////////////			
+					
+					
+					
+					
+					
+					
+;mfiltro  (+-a,+-b,+-j,+-k,+-l,+-m,+-n,+-o,+-p)enteros pos/neg tamaño 9 por direccion 4 bytes = 1 palabra
+;ModFiltro (+-c,+-d) 
+;ModFiltro (num,den)
+;actualizaFiltro mfiltro(0...8)x(+-c)/(+-d) if modfiltro(num ==0 || den == 0) no actualizar filtro 
+
+
+;pruebaAct:		
+;or r30,r0,r0
+;addu r30,r30,36856
+
+
+	
+
+ActualizaFiltro: ;hay que cambiar el r30 por r31
+					;push(r1);//////////////////////////////
+					;push(r31);////////// Creation of stack frame for the sub.
+					;or r31,r30,r30;///////////////////////
+                    ld r11,r30,0;cargo dir r30
+					ld r21,r30,4;
+					ld r10,r11,0; cargo dir 1 elem matriz
+					;ld r11,r30,36; cargo dir dupla (num,den)
+					or r3, r0 ,r0; inicializo contador a 0
+					ld r12, r21,0; cargo valor num
+					ld r13, r21,4; cargo valor den
+					cmp r2, r12,r0;
+					bb1 eq ,r2,endAF;  miro si son 0, en caso fin
+					cmp r2 ,r13,r0;
+					bb1 eq , r2,endAF;
+			bucleAF:	
+					cmp r2,r3,36; ha terminado la matriz?  4 bytes x 9 elementos
+					bb1 eq,r2,endAF;
+					ld r14,r11,r3; cargo num matriz
+					muls r14,r14,r12; num matriz x num 
+					divs r14,r14,r13; mun matriz /den
+					st r14,r11,r3;
+					addu r3,r3,4; aumento contador para que recorra la matriz
+					br bucleAF;
+					
+			endAF:
+					
+					;or r30,r31,r31;/////////////////////////
+					;pop(r31);//////////////////////////////
+					;pop(r1);////////// Destruction of stack frame for the sub.
+					jmp(r1);///////////////////////////////			
+
+;pruebaVaPix:
+;or r30,r0,r0
+;addu r30,r30,0x8FF8
+			
+					
+ValorPixel:
+					;push(r1);//////////////////////////////
+					;push(r31);////////// Creation of stack frame for the sub.
+					;or r31,r30,r30;///////////////////////
+					
+					or r5,r0,r0; ACC acumulador entero de una palabra
+					ld r10,r30,0; cargamos el puntero a la direccion en memoria de datos pasados sub img
+					ld r11,r30,4;cargamos el puntero a la direccion en memoria de datos pasados
+					or r3,r0,r0;cursor para movernos bit a bit
+					or r8,r0,r0;
+					
+					
+		bucleVaPix:
+					cmp r2,r3,9;
+					bb1 eq, r2,endVaPix;
+			carga:
+					ld.bu r12,r10,r3; cargamos el primer valor de SubImg
+					ld r13,r11,r8; cargamos el primer valor de la matriz filtro
+					muls r14,r12,r13; multiplicamos
+					add r5,r5,r14; sumamos al acumulador
+					addu r3,r3,1
+					addu r8,r8,4;
+					br bucleVaPix;
+					
+					
+		endVaPix:	
+					or r29,r5,r0; cargamos en r29 el valor obtenido en ACC
+					;or r30,r31,r31;/////////////////////////
+					;pop(r31);//////////////////////////////
+					;pop(r1);////////// Destruction of stack frame for the sub.
+					jmp(r1);///////////////////////////////
+
+
+          
+
+;pruebaSubMat:
+	;or r30,r0,r0
+	;addu r30,r30,		
+		  
+		  
+SubMatriz:
+
+					ld r10,r30,0; mem imagen full
+					ld r11,r30,4;  mem subimg
+					ld r12,r30,8;  i -por value
+					ld r13,r30,12; j -por valor
+					
+					ld r14,r10,0 ; M
+					ld r15,r10,4 ; N
+					;ld r16,r10,8 ; pix 1 img en linea
+					;ld r17,r11,0;  pix subimg
+					
+					cmp r2,r12,0
+					bb1 eq,r2,borde
+					
+					cmp r2,r13,0
+					bb1 eq,r2,borde
+					
+					or r18,r0,r0
+					subu r18,r14,1; m-1
+					cmp r2,r12,r18
+					bb1 eq,r2,borde
+					
+					or r18,r0,r0
+					subu r18,r15,1; n-1
+					cmp r2,r13,r18
+					bb1 eq,r2,borde
+			inicio:	
+					or r3,r0,r0; inicializamos contador a 0
+					
+					; I(i-1,j-1),
+					or r20,r12,r0
+					or r21,r13,r0
+					subu r20,r20,1
+					subu r21,r21,1
+					
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					
+					;I(i-1,j)
+					or r20,r12,r0
+					or r21,r13,r0
+					subu r20,r20,1
+					;subu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					
+					; I(i-1,j+1)
+					or r20,r12,r0
+					or r21,r13,r0
+					subu r20,r20,1
+					addu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					
+					
+					;I(i,j-1)
+					or r20,r12,r0
+					or r21,r13,r0
+					;subu r20,r20,1
+					subu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+			        
+					; I(i,j)
+					or r20,r12,r0
+					or r21,r13,r0
+					;subu r20,r20,1
+					;subu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					
+					; I(i,j+1)
+					or r20,r12,r0
+					or r21,r13,r0
+					;subu r20,r20,1
+					addu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					
+					;I(i+1,j-1)
+					or r20,r12,r0
+					or r21,r13,r0
+					addu r20,r20,1
+					subu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					
+					;I(i+1,j)
+					or r20,r12,r0
+					or r21,r13,r0
+					addu r20,r20,1
+					;subu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					
+					; I(i+1,j+1)
+					or r20,r12,r0
+					or r21,r13,r0
+					addu r20,r20,1
+					addu r21,r21,1
+					or r18,r0,r0; libero r18
+					mulu r18,r20,r15; calculo posicion en linea del array
+					addu r18,r18,r21; calculo posicion en linea del array
+					addu r18,r18,8; inicio imagen
+					ld.bu r16,r10,r18;
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					br endSubMat
+			borde:	
+					or r18,r0,r0; libero r18
+					mulu r18,r12,r15;contador
+					addu r18,r18,r13
+					addu r18,r18,8; inicio imagen
+				    or r3,r0,r0
+					ld.bu r16,r10,r18;
+			bucleBorde:
+					cmp r2,r3,9
+					bb1 eq,r2,endSubMat
+					st.b r16,r11,r3;
+					addu r3,r3,1;
+					br bucleBorde
+			endSubMat:
+					jmp(r1);///////////////////////////////
+
+
+
+
+
+
+
+
+			
+
+FilPixel:
+
+					push(r1);//////////////////////////////
+					push(r31);////////// Creation of stack frame for the sub.
+					or r31,r30,r30;///////////////////////
+					
+					ld r10,r31,8 ;im
+					ld r11,r31,12 ;i
+					ld r12,r31,16 ;j
+					ld r13,r31,20 ;mt
+					
+					subu r30,r30,12 ;guardo espacio
+					or r25,r30,r0
+					
+					push(r12)   ;    img mt i j
+					push(r11)
+					push(r25)
+					push(r10)
+					
+					bsr SubMatriz
+					
+					pop(r10)
+					pop(r25);8FE0
+					pop(r11)
+					pop(r12)
+					ld r13, r31, 20
+					;subu r15,r30,12
+					push(r13)
+					push(r25)
+					
+			        bsr ValorPixel
+					pop(r25)
+					pop(r13)
+			        or r3,r0,r0 
+					or r5,r0,r0
+			peso:
+					cmp r2,r3,36
+					bb1 eq,r2,pruebaPeso
+					ld r22 ,r13,r3
+					add r5,r5,r22
+					addu r3,r3,4
+					br peso
+					
+			ajustePeso:
+				  addu r5,r0,1
+				  br pruebaTotal
+
+			pruebaPeso:; estaba mal el bb1
+			        cmp r2,r5,r0
+					bb1 eq,r2,ajustePeso
+			
+			
+			
+				  
+			pruebaTotal:		
+					divs r5,r29,r5
+			        cmp r2,r5,0
+					bb1 le,r2,menorPeso
+					cmp r2,r5,255
+					bb1 ge,r2,mayorPeso
+					br endFilPix
+			
+			menorPeso:
+					addu r5,r0,0
+					br endFilPix
+			mayorPeso:
+					addu r5,r0,255
+					br endFilPix
+			
+			endFilPix:
+					
+			        or r29,r5,r0
+					or r30,r31,r31;/////////////////////////
+					pop(r31);//////////////////////////////
+					pop(r1);////////// Destruction of stack frame for the sub.
+					jmp(r1);///////////////////////////////
+					
+					
+					
+					
+					
+					
+					
+					
+
+Filtro:
+			push(r1);//////////////////////////////
+			push(r31);////////// Creation of stack frame for the sub.
+			or r31,r30,r30;///////////////////////
+			ld r10,r31,8   ; imagen
+			ld r11,r31,12	;ImFiltrada
+			ld r12,r31,16	;Mfiltro
+			
+			ld r13,r10,0 ; m imagen
+			ld r14,r10,4 ; n imagen
+			
+			st r13,r11,r0; guardamos m 0x8028
+			st r14,r11,4;guardamos n
+			or r3,r0,r0
+			or r4,r0,r0
+			or r5,r0,r0
+			sub r13,r13,1
+			sub r14,r14,1
+			
+			bucleI:
+			cmp r2,r3,r13
+			bb1 eq,r2,fueraBucle
+			br bucleJ
+			
+			finBucleJ:
+			or r4,r0,r0
+			addu r3,r3,1
+			br bucleI
+			
+			
+			bucleJ:
+			cmp r2,r4,r14
+			bb1 eq,r2,finBucleJ
+			push(r5)
+			push(r3)
+			push(r4)
+			push(r12)
+			push(r4)
+			push(r3)
+			push(r10)
+			bsr FilPixel
+			pop(r10)
+			pop(r3)
+			pop(r4)
+			pop(r12)
+			pop(r4)
+			pop(r3)
+			pop(r5)
+			hola2:
+			ld r10,r31,8  ; imagen
+			ld r13,r10,0 ; m imgagen
+			ld r14,r10,4 ; n imagen
+			ld r11,r31,12
+			addu r23,r0,8
+			addu r23,r23,r5
+			st.b r29,r11,r23
+			addu r4,r4,1
+			addu r5,r5,1
+			hola1:
+			br bucleJ
+			
+			
+			
+			fueraBucle:
+			pop(r10)
+			pop(r3)
+			pop(r4)
+			pop(r12)
+			
+			or r30,r31,r31;/////////////////////////
+			pop(r31);//////////////////////////////
+			pop(r1);////////// Destruction of stack frame for the sub.
+			jmp(r1);///////////////////////////////
+
+			
+			
+			
+			
+			
+			
+FiltRec:
+
+			push(r1);//////////////////////////////
+			push(r31);////////// Creation of stack frame for the sub.
+			or r31,r30,r30;///////////////////////
+			ld r10,r31,8;carga direccion ImagenIn(M,N,Img en fila byte sin signo)
+			ld r11,r31,12;carga direccion ImagenOut(M,N,Img en fila byte sin signo)
+			ld r12,r31,16;carga direccion Mfiltro(filto a aplicar, numero entero con signo(palabra))
+			ld r13,r31,20;carga direccion dupla modFiltro para filtro de salida
+			ld r14,r31,24;carga valor nCambios minimo de cambio(contrasta con Comp)
+			
+			ld r15,r10,0; cargo m 
+			ld r16,r10,4; cargo n
+			
+			mulu r17,r15,r16; calculo tamaño
+			
+			divu r18,r17,4; divido y multiplico , si son distintos hay exceso
+			mulu r18,r18,4
+			cmp r2,r17,r18
+			divu r18,r17,4
+			
+			bb0 gt,r2,noExceso
+			addu r18,r18,1
+			noExceso:   ;calculo por palabras
+			mulu r18,r18,4
+			addu r18,r18,8; reservo tambien para tam img
+			
+			subu r30,r30,r18 ; reservo espacio en pila
+			or r25,r30,r0
+			
+			push(r25)
+			push(r12)
+			push(r11)
+			push(r10)
+			bsr Filtro
+			pop(r10)
+			pop(r11)
+			pop(r12)
+			;primero push dupla modfiltro , luego mfiltro
+			
+			ld r12,r31,16;carga direccion Mfiltro(filto a aplicar, numero entero con signo(palabra))
+			ld r13,r31,20;carga direccion dupla modFiltro para filtro de salida
+			push(r13)
+			push(r12)
+			op:
+			bsr ActualizaFiltro
+			pp:
+			pop(r12)
+			pop(r13)
+			pop(r25);/////////////////////////////////////// nada en pila
+			
+			or r15,r0,r0; libero r15 era m
+			or r16,r0,r0; libero r16 era n
+			or r17,r0,r0; libero r17 era tm img
+			or r18,r0,r0; libero r18 era espacio en pila a reservar
+			
+			ld r11,r31,12;carga direccion ImagenOut(M,N,Img en fila byte sin signo)
+			ld r15,r11,r0; cargo m img out
+			ld r16,r11,4; cargo n img out
+			muls r17,r15,r16; tamanio img
+			hola:
+			or r3,r0,r0; pone ha cero bucle copiaTMP
+			st r15,r25,r3
+			addu r3,r3,4
+			st r16,r25,r3
+			addu r3,r3,4
+			addu r17,r17,8
+			
+		copiaTMP:
+			cmp r2,r3,r17
+			bb1 eq ,r2,imgTMP
+			ld.bu r18,r11,r3
+			st.b r18,r25,r3
+			addu r3,r3,1
+			br copiaTMP
+			
+			
+		imgTMP:
+			or r15,r0,r0; libero r15 era m img out
+			or r16,r0,r0; libero r16 era n img out
+			or r17,r0,r0; libero r17 era tm img out
+			or r18,r0,r0; libero r18 era bit copiaTMP
+			sub r15,r15,1
+			push(r25);/////////////////////////////////////////////////// r25 sigue en pila
+			break3:
+			push(r15)
+			bsr nFiltrados
+			pop(r15)
+			cmp r2,r29,0
+			bb1 eq, r2,endNeg
+			
+			
+			pop(r25)
+			or r15,r0,r0; libero r15 era nf
+			ld r10,r31,8;carga direccion ImagenIn(M,N,Img en fila byte sin signo)
+			ld r11,r31,12;carga direccion ImagenOut(M,N,Img en fila byte sin signo)
+			
+			ld r14,r31,24;carga valor nCambios minimo de cambio(contrasta con Comp)
+			push(r14)
+			push(r25)
+			push(r11)
+			push(r10)
+			bsr Comp
+			pop(r10)
+			pop(r11)
+			pop(r25)
+			pop(r14)
+			
+			cmp r2,r29,r14
+			bb1 lt,r2,endFiltRec
+			
+			
+			ld r11,r31,12;carga direccion ImagenOut(M,N,Img en fila byte sin signo)
+			ld r12,r31,16;carga direccion Mfiltro(filto a aplicar, numero entero con signo(palabra))
+			ld r13,r31,20;carga direccion dupla modFiltro para filtro de salida
+			ld r14,r31,24;carga valor nCambios minimo de cambio(contrasta con Comp)
+			
+			push(r14)
+			push(r13)
+			push(r12)
+			push(r11)
+			push(r25)
+			
+			recur:
+			bsr FiltRec
+			or r30,r31,r31;/////////////////////////
+			pop(r31);//////////////////////////////
+			pop(r1);////////// Destruction of stack frame for the sub.
+			jmp(r1);///////////////////////////////
+			
+			endNeg:
+			sub r29,r0,1
+			
+			endFiltRec:
+			or r30,r31,r31;/////////////////////////
+			pop(r31);//////////////////////////////
+			pop(r1);////////// Destruction of stack frame for the sub.
+			jmp(r1);///////////////////////////////
+			
+			
+			
+			
+			
+
+			
+
+
+; 36848      00008FE0
+;data 32768,32792 ;328210032  
+
+;org 0x8000
+;IMAGEN1:
+;data 4, 8
+;data 0x00000000, 0x00000000, 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000, 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000, 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000, 0x00000000, 0x00000000
+
+;IMAGEN2:
+;data 4, 8
+;data 0x00000000, 0x00000000,0x00000000,  0x00000000
+;data 0x00000000, 0x00000000,0x00000000,  0x00000000
+;data 0x00000000, 0x00000000,0x00000000,  0x00000000
+;data 0x00000000, 0x00000000,0x00000000,  0x00000000
+;//////////////
+;org 0x8000
+;data 2, 2
+;data 4,4
+;data 4,4
+
+
+;data 2, 2
+;data 4,4
+;data 5,5
+;///////////////
+;org 0x8000
+;IMAGEN1:
+;data 4, 8
+;data 0x00002100, 0x00000000
+;data 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000
+;IMAGEN2:
+;data 4, 8
+;data 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000
+;data 0x00000000, 0x00000000
+
+;///////////////
+
+;org 0x8ff8
+;data 0x8000,0x8028
+
+;----------------------------------------------------------------------------
+
+;actualiza filtro pruebas------- ok
+;org 0x8000
+;data 4, 5, 6
+;data 7, 8, 9
+;data 1, 2, 3
+;data 2, 1
+;org 0x8ff8
+;data 0x8000
+;----------------------------------
+
+
+;valor pixel pruebas--------- ok
+
+;org 0x8ff8
+;data 0x8000, 0x8010
+
+
+;org 0x8000
+;;SUBIMAGEN:
+;data 0x00000000, 0x00000055, 0x000000000
+
+;org 0x8010
+;FILTRO: 
+;data 0,0,0
+;data 0, 0xfffffffe, 0
+;data 0, 0, 0
+
+
+
+;valor pixel pruebas--------- ok
+
+;org 0x8ff8
+;data 0x8000, 0x8010
+
+
+;org 0x8000
+;;SUBIMAGEN:
+;data 0x13121110, 0x17161514, 0x00000018
+
+;org 0x8010
+;FILTRO: 
+;data 0xfffffffe,0xfffffffe,0xfffffffe
+;data 0xfffffffe,0x00000000,0xfffffffe
+;data 0xfffffffe,0xfffffffe,0xfffffffe
+
+;SubMatriz pruebas -------------- ok
+
+    ;org 0x8ff0
+	;data 0x8000, 0x8040,1,1
+
+    ;org 0x8000
+	;data 3, 3
+	;data 0x40302010, 0x80706050, 0x90
+     
+	;org 0x8040
+	;data 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
+	
+	;---------------------------- lea prueba
+;org 0x8000
+;IMAGEN:
+;data 5, 8
+;data 0x04030201, 0x08070605, 0x0c0b0a09,0x100f0e0d ,0x14131211,0x18171615,0x04030201, 0x08070605, 0x0c0b0a09,0x100f0e0d;data 0x40302010, 0x80706050, 0x90
+;org 0x8100
+;SUBIMAGEN:
+;data 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
+;pruebaSubMat:
+;LEA(r30,0x9000)
+;or r2 ,r0,r0
+;addu r2,r0,2
+;push(r2)
+;or r2,r0,r0
+;addu r2,r0,1
+;push(r2)
+;LEA(r2,SUBIMAGEN)
+;push(r2)
+;LEA(r2,IMAGEN)
+;push(r2)
+;bsr SubMatriz
+stop
+
+;nfiltrados pruebas-------- ok
+   
+	;org 0x0
+	;data 0x00000000
+	;org 0x8FFC
+	;OPER:
+	;data 0xffffffff
+	;pruebanFil:
+	;LEA(r30,60000)
+	;LEA(r2,0x0000000e)
+	;push(r2)
+	;bsr nFiltrados
+	;stop
+
+;filpixel pruebas ----------- ok; r29=2
+
+
+;org 0x8000
+
+;imagen: data 4, 8
+		;data 0x44332211, 0x03020155
+		;data 0x22210504, 0x31252423
+		;data 0x35343332, 0x44434241
+    	;data 0x03020155, 0x22210504
+;Mfiltro:data 1,0,-1
+	;	data 1,0,-1
+	;	data 1,0,-1
+;pruebaFilPix:
+;LEA(r30,0x60000)
+;LEA(r2,Mfiltro)
+;push(r2)
+;addu r2,r0,1
+;push(r2)
+;addu r2,r0,2
+;push(r2)
+;LEA(r2,imagen) ;img i j mt
+;push(r2)
+;bsr FilPixel
+;stop
+
+
+;filtro pruebas ----------- ok
+
+;org 0x8000
+;IMAGEN:
+;data 4, 8
+;data 0x04030201, 0x07060504
+;data 0x14134211, 0x17168514
+;data 0x24232221, 0x27262574
+;data 0x34333231, 0x37363534
+;FILTRADA:
+;;res 40
+;FILTRO: data 0, -3, 0
+;data 0, 4, 0
+;data 0, 0, 0
+
+;pruebaFiltro:
+;LEA(r30,0x600000)
+;LEA(r2,FILTRO)
+;push(r2)
+;LEA(r2,FILTRADA)
+;push(r2)
+;;LEA(r2,IMAGEN)
+;push(r2)
+;bsr Filtro
+;stop
+
+
+
+;filrec ----------- ok
+;org 0x0
+;data 4
+;org 0x8000
+;IMAGEN:
+;data 4, 4
+;data 0x04030201, 0x0D0E0F10, 0x05040302, 0x23222120
+;DUPLA: data 1, 1
+;FILTRO: data 1, 1, 1
+;data 1, 0, 1
+;data 1, 1, 1
+;FILTRADA: res 24
+;data 0xAAAAAAAA, 0xAAAAAAAA
+
+
+;org 0x0
+;data 4
+;org 0x8000
+;IMAGEN:
+;data 4, 4
+;data 0x04030201, 0x0D0E0F10, 0x05040302, 0x23222120
+;DUPLA: data 1, 1
+;FILTR: data 1, 1, 1
+;data 1, 0, 1
+;data 1, 1, 1
+;FILTRADA: res 24
+;data 0xAAAAAAAA, 0xAAAAAAAA
+
+
+;org 0x0
+;data 4
+;org 0x8000
+;IMAGEN:
+;data 4, 4
+;data 0x04030201, 0x0D0E0F10, 0x05040302, 0x23222120
+;DUPLA: data 1,2;
+	   
+;FILTR: 
+;data 0x0A, 0x0A, 0x0A
+;data 0x0A, 0x0, 0x0A
+;data 0x0A, 0x0A, 0x0A
+;FILTRADA: res 24
+;data 0xAAAAAAAA,0xAAAAAAAA
+
+
+;org 0x0
+;data 5
+;org 0x8000
+;IMAGEN:
+;data 5, 5
+;data 0x0A000A,0x0a,0x0a0000,0x0a000a,0,0x0a000a,0x0a
+;DUPLA: data 9,0x0a;
+	   
+;FILTR: 
+;data 0, 20, 0
+;data 20, 0, 20
+;data 0, 20, 0
+;FILTRADA: res 36
+;data 0xAAAAAAAA,0xAAAAAAAA
+
+
+;pruebaFiltRec:
+;LEA(r30,0x36000)
+;addu r2,r0,1
+;push(r2)
+;LEA(r2,DUPLA)
+;push(r2)
+;LEA(r2,FILTR)
+;push(r2)
+;LEA(r2,FILTRADA)
+;push(r2)
+;LEA(r2,IMAGEN)
+;push(r2)
+;bsr FiltRec
+;stop
+
+
+
+
+
+
+
+
